@@ -30,7 +30,7 @@ void put_one(vector<int> &sf, vector<int> &st) {
 void put_all(vector<int> &sf, vector<int> &st) {
     for (auto i = spf; i != sf.end(); i++) position[*i] = pt;
     st.insert(st.end(), spf, sf.end());
-    sf.erase(spf, st.end());
+    sf.erase(spf, sf.end());
 }
 
 vector<int>::iterator find_pos(int pos, int index) {
@@ -60,15 +60,6 @@ int main() {
 
         if(command1 == "move")  put_one(sf, st);
         if(command1 == "pile")  put_all(sf, st);
-
-        cout << endl << from << " to " << to << endl;
-        for (int i = 0; i < n; i++) {
-            cout << i << ":";
-            for (auto &in: stacks[i]) {
-                cout << " " << in;
-            }
-            cout << endl;
-        }
     }
 
     for (int i = 0; i < n; i++) {
