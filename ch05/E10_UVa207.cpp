@@ -5,9 +5,8 @@
 #include <map>
 #include <iomanip>
 #include <fstream>
+#include <set>
 
-#define cout of
-#define cin in
 
 using namespace std;
 
@@ -73,9 +72,7 @@ bool comp(const Player &a, const Player &b) {
 
 
 int main() {
-    ifstream in("in.txt");
     cin >> N;
-    ofstream of("out.txt");
     while (N--) {
         string buf;
         getline(cin, buf);
@@ -92,7 +89,12 @@ int main() {
         cout << "-----------------------------------------------------------------------" << endl;
 
         int cutNum = 0;
+        set<int> s;
         for (int i = 0; i < playerNum; i++) {
+            if (i >= 70 && player[i].score36 != player[69].score36) {
+                cutNum = i;
+                break;
+            }
             if (player[i].quitRound < 2) {
                 cutNum = i;
                 break;
@@ -104,11 +106,12 @@ int main() {
 
         sort(begin(player), begin(player) + cutNum, comp);
         for (int i = 0; i < cutNum; i++) {
-            player[i].tie = total2num[player[i].score72];
+            if (!player[i].amateur)
+                player[i].tie = total2num[player[i].score72];
         }
 
         int lastTie = 0;
-        int index = 0, moneyIndex = 0, trueIndex = 0;
+        int index = 0, moneyIndex = 0, trueIndex = 0, lastCount = 0, lastMon = 0;
         string indexout;
         for (int i = 0; i < cutNum; i++) {
             cout << player[i].name << " ";
@@ -129,10 +132,9 @@ int main() {
                     } else {
                         index = trueIndex;
                     }
-                    indexout = to_string(trueIndex) + "";
+                    indexout = to_string(index) + "";
                 }
                 cout << left << setw(10) << indexout;
-                lastTie = player[i].score72;
             }
 
             for (int &sc: player[i].score) {
@@ -146,20 +148,21 @@ int main() {
                     cout << "DQ";
                 } else {
                     cout << player[i].score72;
-//                if (player[i].score72 / 100 == 0) cout << " ";
+                    if (player[i].score72 / 100 == 0) cout << " ";
                 }
             }
 
 
             if (!player[i].amateur && player[i].quitRound == 5) {
-                if (player[i].quitRound < 4) {
-                    cout << left << setw(10) << "DQ";
-                } else {
-                    cout << left << setw(10) << player[i].score72;
-//                if (player[i].score72 / 100 == 0) cout << " ";
-                }
+                cout << left << setw(10) << player[i].score72;
                 cout << "$";
+                if (player[i].tie && player[i].score72 != lastMon) {
+                    moneyIndex += lastCount;
+                } else if (!player[i].tie) {
+                    moneyIndex += lastCount;
+                }
                 int count = player[i].tie + 1;
+                lastCount = count;
                 double total = 0;
                 for (int j = 0; j < count; j++) {
                     total += percentage[moneyIndex + j];
@@ -167,13 +170,15 @@ int main() {
                 cout << right
                      << setiosflags(ios::fixed)
                      << setprecision(2) << std::setw(9)
-                     << price * total / 100 / count;
-                if (i < cutNum - 1 && player[i + 1].score72 != player[i].score72)
-                    moneyIndex += count;
+                     << price * total / 100.0 / (double)count + 1e-8;
+
             }
+            lastTie = player[i].score72;
+            if (!player[i].amateur) lastMon = player[i].score72;
             cout << endl;
         }
-        cout << endl;
+        if(N > 0)
+            cout << endl;
         total2num.clear();
     }
 }
